@@ -21,17 +21,15 @@
 		 This program is in the public domain
 
 */
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
-
 #include "pdb.h"
 #include "palmread.h"
 #include "palmrec.h"
 
-/*  palmRecParse  --  Set up to parse a new record.  You can call
+/* palmRecParse  --  Set up to parse a new record.  You can call
 		      this to parse an in-memory record other than
 		      the last read with palmRead.  In fact, you can
                       use this with a palmreadContext which wasn't
@@ -39,81 +37,84 @@
 
 void palmRecParse(struct palmreadContext *p, void *buf, long bufl)
 {
-    p->lastrec = (unsigned char *) buf;
-    p->lastlength = bufl;
-    p->recptr = 0;
+	p->lastrec = (unsigned char *) buf;
+	p->lastlength = bufl;
+	p->recptr = 0;
 }
 
-/*  palmRecByte  --  Return the next byte from the record.  */
+/* palmRecByte  --  Return the next byte from the record.  */
 
 unsigned char palmRecByte(struct palmreadContext *p)
 {
-    assert(p->lastrec != NULL);
-    assert(p->recptr < p->lastlength);
+	assert(p->lastrec != NULL);
+	assert(p->recptr < p->lastlength);
 
-    return p->lastrec[p->recptr++];
+	return p->lastrec[p->recptr++];
 }
 
-/*  palmRecShort  --  Return the next short from the record.  */
+/* palmRecShort  --  Return the next short from the record.  */
 
 unsigned short palmRecShort(struct palmreadContext *p)
 {
-    unsigned short s;
+	unsigned short s;
 
-    assert(p->lastrec != NULL);
-    assert((p->recptr + 1) < p->lastlength);
+	assert(p->lastrec != NULL);
+	assert((p->recptr + 1) < p->lastlength);
 
-    s = (p->lastrec[p->recptr] << 8) | p->lastrec[p->recptr + 1];
-    p->recptr += 2;
+	s = (p->lastrec[p->recptr] << 8) | p->lastrec[p->recptr + 1];
+	p->recptr += 2;
 
-    return s;
+	return s;
 }
 
-/*  palmRecLong  --  Return the next long from the record.  */
+/* palmRecLong  --  Return the next long from the record.  */
 
 unsigned long palmRecLong(struct palmreadContext *p)
 {
-    unsigned long l;
+	unsigned long l;
 
-    assert(p->lastrec != NULL);
-    assert((p->recptr + 3) < p->lastlength);
+	assert(p->lastrec != NULL);
+	assert((p->recptr + 3) < p->lastlength);
 
-    l = (p->lastrec[p->recptr	 ] << 24) |
-	(p->lastrec[p->recptr + 1] << 16) |
-	(p->lastrec[p->recptr + 2] <<  8) |
-	 p->lastrec[p->recptr + 3];
-    p->recptr += 4;
+	l = (p->lastrec[p->recptr] << 24) |
+		(p->lastrec[p->recptr + 1] << 16) |
+		(p->lastrec[p->recptr + 2] << 8) |
+		p->lastrec[p->recptr + 3];
+	p->recptr += 4;
 
-    return l;
+	return l;
 }
 
-/*  palmRecBytes  --  Return a sequence of consecutive bytes
+/* palmRecBytes  --  Return a sequence of consecutive bytes
 		      from the record.	*/
 
 void palmRecBytes(struct palmreadContext *p, void *buf, int bufl)
 {
-    assert(p->lastrec != NULL);
-    assert((p->recptr + (bufl - 1)) < p->lastlength);
+	assert(p->lastrec != NULL);
+	assert((p->recptr + (bufl - 1)) < p->lastlength);
 
-    memcpy(buf, p->lastrec + p->recptr, bufl);
-    p->recptr += bufl;
+	memcpy(buf, p->lastrec + p->recptr, bufl);
+	p->recptr += bufl;
 }
 
-/*  palmRecString  --  Return a zero-terminated string from
+/* palmRecString  --  Return a zero-terminated string from
 		       the record.  */
 
 void palmRecString(struct palmreadContext *p, char *buf, int bufl)
 {
-    int l = strlen((char *) (p->lastrec + p->recptr)) + 1;
+	int l = strlen((char*)(p->lastrec + p->recptr)) + 1;
 
-    assert(p->lastrec != NULL);
-    assert((p->recptr + (l - 1)) < p->lastlength);
+	assert(p->lastrec != NULL);
+	assert((p->recptr + (l - 1)) < p->lastlength);
 
-    if (bufl < l) {
-	memcpy(buf, p->lastrec + p->recptr, bufl - 1);
-	p->lastrec[p->recptr + (bufl - 1)] = 0;
-    } else {
-	strcpy(buf, (char *) (p->lastrec + p->recptr));
-    }
-    p->recptr += l;
+	if (bufl < l)
+	{
+		memcpy(buf, p->lastrec + p->recptr, bufl - 1);
+		p->lastrec[p->recptr + (bufl - 1)] = 0;
+	}
+	else
+	{
+		strcpy(buf, (char*)(p->lastrec + p->recptr));
+	}
+	p->recptr += l;
 }
