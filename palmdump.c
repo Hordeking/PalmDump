@@ -29,11 +29,11 @@ extern void xd(FILE *out, unsigned char *buf, int bufl, int dochar);
 static FILE * fi;
 
 /*Extract a 4 character string jammed into a long. */
-#define stringAlong(s, l)\
-s[0] = (char)(l >> 24);\
-s[1] = (char)(l >> 16);\
-s[2] = (char)(l >> 8);\
-s[3] = (char)(l);\
+#define stringAlong(s, l)	\
+s[0] = (char)(l >> 24);		\
+s[1] = (char)(l >> 16);		\
+s[2] = (char)(l >> 8);		\
+s[3] = (char)(l);			\
 s[4] = 0
 
 /*palmDate -- Edit Palm date and time, checking for invalid
@@ -61,7 +61,6 @@ static char *
 				sprintf(s, invalid, t);
 				return s;
 			}
-
 			sprintf(s, "PC/Unix time: %s", asctime(utm));
 			return s;
 		}
@@ -86,8 +85,9 @@ static void usage(void)
 	fprintf(stderr, "palmdump[options] ifile[ofile] \n");
 	fprintf(stderr, "Dump Palm Computing® Platform PDB or PRC file.\n");
 	fprintf(stderr, "   Options:\n");
-	fprintf(stderr, "       -n             Dump record/resource headers, but not content\n");
-	fprintf(stderr, "       -u             Print this message\n");
+	fprintf(stderr, "       -s             Dump record/resource headers, but not content\n");
+	fprintf(stderr, "       -n<#>         Dump content only in entry #\n");
+	fprintf(stderr, "       -h             Print this message\n");
 	fprintf(stderr, "Originally by John Walker (http://www.fourmilab.ch/)\n");
 	fprintf(stderr, "This program is in the public domain.\n");
 }
@@ -100,23 +100,27 @@ int main(int argc, char *argv[])
 	extern int optind;
 	FILE *fo = stdout;
 
-	int i, opt, content = 1;
+	int i, opt, content = 1, nEntry = -1;
 	struct palmreadContext * rc;
 	PDBHeader ph;
 	char *inname;
 	char dbname[kMaxPDBNameSize + 2];
 
-	while ((opt = getopt(argc, argv, "nu")) != -1)
+	while ((opt = getopt(argc, argv, "shn:")) != -1)
 	{
 		switch (opt)
 		{
-			case 'n':
+			case 's':
 				content = 0;
 				break;
 
-			case 'u':
+			case 'h':
 				usage();
 				return 0;
+
+			case 'n':
+				nEntry = atoi(optarg);
+				break;
 
 			default:
 				usage();
@@ -274,7 +278,7 @@ int main(int argc, char *argv[])
 						i, rlen, rc->rsp[i].offset, s, re.id);
 					if (content)
 					{
-						xd(fo, rdata, rlen, 1);
+						xd(fo, rdata, rlen, 0);
 					}
 					free(rdata);
 				}
